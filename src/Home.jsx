@@ -39,6 +39,16 @@ import {
   BsTrophy,
   BsCamera,
   BsFlag,
+  BsRecycle,
+  BsBoxSeam,
+  BsDropletHalf,
+  BsTree,
+  BsX,
+  BsPlus,
+  BsDownload,
+  BsExclamationCircle,
+  BsCheckCircle,
+  BsInfoCircle,
 } from "react-icons/bs"
 import {
   XAxis,
@@ -63,6 +73,126 @@ function Home() {
   const [isWeatherExpanded, setIsWeatherExpanded] = useState(false)
   const [isEventsExpanded, setIsEventsExpanded] = useState(false)
   const [isLaborExpanded, setIsLaborExpanded] = useState(false)
+  const [isWasteExpanded, setIsWasteExpanded] = useState(false)
+  const [selectedWasteCategory, setSelectedWasteCategory] = useState("all")
+  const [selectedTimeRange, setSelectedTimeRange] = useState("week")
+
+  // Waste Management Data - Focus on Food and Beverages
+  const wasteCategories = [
+    {
+      id: "food",
+      name: "Food Waste",
+      icon: <BsCup />,
+      color: "#f093fb",
+      amount: 45.2,
+      unit: "lbs",
+      cost: 180.8,
+      trend: -8.5,
+      description: "Burgers, pasta, expired ingredients, plate waste",
+      items: [
+        { name: "Burger patties", amount: 12.5, cost: 62.5 },
+        { name: "Pasta dishes", amount: 8.7, cost: 43.5 },
+        { name: "Bread & buns", amount: 15.2, cost: 45.6 },
+        { name: "Vegetables", amount: 8.8, cost: 29.2 },
+      ],
+    },
+    {
+      id: "beverages",
+      name: "Beverage Waste",
+      icon: <BsDropletHalf />,
+      color: "#667eea",
+      amount: 28.7,
+      unit: "gallons",
+      cost: 157.4,
+      trend: +12.3,
+      description: "Beer, wine, whisky, soft drinks, expired beverages",
+      items: [
+        { name: "Craft Beer", amount: 8.5, cost: 68.0 },
+        { name: "Red Wine", amount: 6.2, cost: 49.6 },
+        { name: "Whisky", amount: 2.1, cost: 25.2 },
+        { name: "Soft Drinks", amount: 11.9, cost: 14.6 },
+      ],
+    },
+    {
+      id: "packaging",
+      name: "Packaging Waste",
+      icon: <BsBoxSeam />,
+      color: "#43e97b",
+      amount: 22.1,
+      unit: "lbs",
+      cost: 44.2,
+      trend: -5.2,
+      description: "Bottles, cans, food containers, wrapping materials",
+      items: [
+        { name: "Beer bottles", amount: 8.5, cost: 17.0 },
+        { name: "Wine bottles", amount: 6.2, cost: 12.4 },
+        { name: "Food containers", amount: 7.4, cost: 14.8 },
+      ],
+    },
+    {
+      id: "organic",
+      name: "Organic Waste",
+      icon: <BsTree />,
+      color: "#4facfe",
+      amount: 18.9,
+      unit: "lbs",
+      cost: 37.8,
+      trend: -15.7,
+      description: "Vegetable peels, coffee grounds, compostable items",
+      items: [
+        { name: "Vegetable scraps", amount: 12.1, cost: 24.2 },
+        { name: "Coffee grounds", amount: 6.8, cost: 13.6 },
+      ],
+    },
+  ]
+
+  const wasteTimelineData = [
+    { date: "2025-01-01", food: 42, beverages: 25, packaging: 18, organic: 28 },
+    { date: "2025-01-02", food: 38, beverages: 30, packaging: 16, organic: 25 },
+    { date: "2025-01-03", food: 45, beverages: 28, packaging: 15, organic: 22 },
+    { date: "2025-01-04", food: 52, beverages: 35, packaging: 20, organic: 30 },
+    { date: "2025-01-05", food: 48, beverages: 32, packaging: 17, organic: 26 },
+    { date: "2025-01-06", food: 41, beverages: 29, packaging: 14, organic: 21 },
+    { date: "2025-01-07", food: 45, beverages: 28, packaging: 15, organic: 22 },
+  ]
+
+  const wasteReductionGoals = [
+    { category: "Food Waste", current: 45.2, target: 35.0, progress: 68 },
+    { category: "Beverages", current: 28.7, target: 22.0, progress: 77 },
+    { category: "Packaging", current: 22.1, target: 18.0, progress: 81 },
+    { category: "Organic", current: 18.9, target: 15.0, progress: 79 },
+  ]
+
+  const wasteAlerts = [
+    {
+      type: "warning",
+      title: "High Beverage Waste Alert",
+      message: "Beer and wine waste increased by 15% this week. Check storage conditions and expiry dates.",
+      time: "2 hours ago",
+      priority: "high",
+    },
+    {
+      type: "success",
+      title: "Food Waste Goal Progress",
+      message: "Successfully reduced burger waste by 12% through better portion control.",
+      time: "1 day ago",
+      priority: "low",
+    },
+    {
+      type: "info",
+      title: "Recycling Pickup Scheduled",
+      message: "Next bottle and can pickup is scheduled for tomorrow at 8:00 AM.",
+      time: "3 hours ago",
+      priority: "medium",
+    },
+  ]
+
+  const wasteDisposalMethods = [
+    { method: "Composting", percentage: 35, color: "#43e97b" },
+    { method: "Recycling", percentage: 28, color: "#4facfe" },
+    { method: "Landfill", percentage: 25, color: "#f093fb" },
+    { method: "Donation", percentage: 12, color: "#667eea" },
+  ]
 
   const data = [
     {
@@ -251,6 +381,41 @@ function Home() {
     }
   }
 
+  const getAlertIcon = (type) => {
+    switch (type) {
+      case "warning":
+        return <BsExclamationCircle style={{ color: "#f093fb" }} />
+      case "success":
+        return <BsCheckCircle style={{ color: "#43e97b" }} />
+      case "info":
+        return <BsInfoCircle style={{ color: "#4facfe" }} />
+      default:
+        return <BsInfoCircle />
+    }
+  }
+
+  const getTotalWaste = () => {
+    return wasteCategories.reduce((total, category) => total + category.amount, 0).toFixed(1)
+  }
+
+  const getTotalCost = () => {
+    return wasteCategories.reduce((total, category) => total + category.cost, 0).toFixed(2)
+  }
+
+  const getFilteredWasteData = () => {
+    if (selectedWasteCategory === "all") {
+      return wasteTimelineData
+    }
+    return wasteTimelineData.map((item) => ({
+      date: item.date,
+      [selectedWasteCategory]: item[selectedWasteCategory],
+    }))
+  }
+
+  const handleWasteRecordedClick = () => {
+    setIsWasteExpanded(!isWasteExpanded)
+  }
+
   return (
     <main className="main-container">
       <div className="main-title">
@@ -268,6 +433,308 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Waste Management Section */}
+      {isWasteExpanded && (
+        <div className="waste-management-section">
+          <div className="waste-header">
+            <div className="waste-title">
+              <BsRecycle className="waste-main-icon" />
+              <div>
+                <h3>Waste Management & Sustainability</h3>
+                <p>Food & Beverage waste tracking and environmental impact analysis</p>
+              </div>
+            </div>
+            <div className="waste-controls">
+              <select
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="glass-button"
+              >
+                <option value="day">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+              </select>
+              <button className="glass-button">
+                <BsDownload /> Export Report
+              </button>
+              <button className="glass-button" onClick={() => setIsWasteExpanded(false)}>
+                <BsX />
+              </button>
+            </div>
+          </div>
+
+          <div className="waste-content">
+            {/* Waste Overview Cards */}
+            <div className="waste-overview">
+              <div className="waste-summary-cards">
+                <div className="waste-summary-card">
+                  <BsTrash className="waste-summary-icon" />
+                  <div className="waste-summary-details">
+                    <h4>Total Waste</h4>
+                    <div className="waste-summary-number">{getTotalWaste()}</div>
+                    <p>lbs this week</p>
+                  </div>
+                </div>
+                <div className="waste-summary-card">
+                  <BsCurrencyDollar className="waste-summary-icon" />
+                  <div className="waste-summary-details">
+                    <h4>Cost Impact</h4>
+                    <div className="waste-summary-number">${getTotalCost()}</div>
+                    <p>weekly loss</p>
+                  </div>
+                </div>
+                <div className="waste-summary-card">
+                  <BsRecycle className="waste-summary-icon" />
+                  <div className="waste-summary-details">
+                    <h4>Recycled</h4>
+                    <div className="waste-summary-number">63%</div>
+                    <p>of total waste</p>
+                  </div>
+                </div>
+                <div className="waste-summary-card">
+                  <BsTree className="waste-summary-icon" />
+                  <div className="waste-summary-details">
+                    <h4>Carbon Saved</h4>
+                    <div className="waste-summary-number">2.4</div>
+                    <p>tons CO2 equiv</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Waste Alerts */}
+              <div className="waste-alerts">
+                <h4>
+                  <BsExclamationTriangle /> Waste Alerts
+                </h4>
+                <div className="alerts-list">
+                  {wasteAlerts.map((alert, index) => (
+                    <div key={index} className={`alert-item ${alert.priority}`}>
+                      <div className="alert-icon">{getAlertIcon(alert.type)}</div>
+                      <div className="alert-content">
+                        <h5>{alert.title}</h5>
+                        <p>{alert.message}</p>
+                        <span className="alert-time">{alert.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Waste Categories Grid */}
+            <div className="waste-categories-section">
+              <h4>
+                <BsBarChart /> Food & Beverage Waste Breakdown
+              </h4>
+              <div className="waste-categories-grid">
+                {wasteCategories.map((category, index) => (
+                  <div key={category.id} className="waste-category-card">
+                    <div className="category-header">
+                      <div className="category-icon" style={{ backgroundColor: category.color }}>
+                        {category.icon}
+                      </div>
+                      <div className="category-info">
+                        <h5>{category.name}</h5>
+                        <p>{category.description}</p>
+                      </div>
+                    </div>
+                    <div className="category-metrics">
+                      <div className="metric-row">
+                        <span className="metric-label">Amount:</span>
+                        <span className="metric-value">
+                          {category.amount} {category.unit}
+                        </span>
+                      </div>
+                      <div className="metric-row">
+                        <span className="metric-label">Cost Impact:</span>
+                        <span className="metric-value">${category.cost}</span>
+                      </div>
+                      <div className="metric-row">
+                        <span className="metric-label">Trend:</span>
+                        <span className={`metric-value ${category.trend > 0 ? "negative" : "positive"}`}>
+                          {category.trend > 0 ? <BsArrowUpShort /> : <BsArrowDownShort />}
+                          {Math.abs(category.trend)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Detailed Items Breakdown */}
+                    <div className="category-items">
+                      <h6>Top Items:</h6>
+                      {category.items.map((item, idx) => (
+                        <div key={idx} className="item-row">
+                          <span className="item-name">{item.name}</span>
+                          <span className="item-amount">
+                            {item.amount} {category.unit}
+                          </span>
+                          <span className="item-cost">${item.cost}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Waste Charts */}
+            <div className="waste-charts-grid">
+              <div className="waste-chart-card">
+                <div className="chart-header">
+                  <h4>Waste Timeline Tracking</h4>
+                  <div className="chart-filters">
+                    <select
+                      value={selectedWasteCategory}
+                      onChange={(e) => setSelectedWasteCategory(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="food">Food Waste</option>
+                      <option value="beverages">Beverages</option>
+                      <option value="packaging">Packaging</option>
+                      <option value="organic">Organic</option>
+                    </select>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={getFilteredWasteData()}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="date" stroke="var(--text-secondary)" />
+                    <YAxis stroke="var(--text-secondary)" />
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(255,255,255,0.9)",
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                    <Legend />
+                    {selectedWasteCategory === "all" ? (
+                      <>
+                        <Line type="monotone" dataKey="food" stroke="#f093fb" strokeWidth={3} name="Food Waste" />
+                        <Line type="monotone" dataKey="beverages" stroke="#667eea" strokeWidth={3} name="Beverages" />
+                        <Line type="monotone" dataKey="packaging" stroke="#43e97b" strokeWidth={3} name="Packaging" />
+                        <Line type="monotone" dataKey="organic" stroke="#4facfe" strokeWidth={3} name="Organic" />
+                      </>
+                    ) : (
+                      <Line
+                        type="monotone"
+                        dataKey={selectedWasteCategory}
+                        stroke={wasteCategories.find((c) => c.id === selectedWasteCategory)?.color || "#667eea"}
+                        strokeWidth={3}
+                        name={wasteCategories.find((c) => c.id === selectedWasteCategory)?.name || "Waste"}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="waste-chart-card">
+                <h4>Disposal Methods Distribution</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={wasteDisposalMethods}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="percentage"
+                      label={({ method, percentage }) => `${method} ${percentage}%`}
+                    >
+                      {wasteDisposalMethods.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(255,255,255,0.9)",
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Waste Reduction Goals */}
+            <div className="waste-goals-section">
+              <h4>
+                <BsCheckCircle /> Waste Reduction Goals
+              </h4>
+              <div className="goals-grid">
+                {wasteReductionGoals.map((goal, index) => (
+                  <div key={index} className="goal-card">
+                    <div className="goal-header">
+                      <h5>{goal.category}</h5>
+                      <span className="goal-progress">{goal.progress}%</span>
+                    </div>
+                    <div className="goal-metrics">
+                      <div className="goal-values">
+                        <span>Current: {goal.current} lbs</span>
+                        <span>Target: {goal.target} lbs</span>
+                      </div>
+                      <div className="goal-bar">
+                        <div
+                          className="goal-fill"
+                          style={{
+                            width: `${goal.progress}%`,
+                            backgroundColor:
+                              goal.progress >= 80 ? "#43e97b" : goal.progress >= 60 ? "#4facfe" : "#f093fb",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="waste-actions">
+              <h4>
+                <BsClipboardCheck /> Quick Actions
+              </h4>
+              <div className="waste-actions-grid">
+                <div className="waste-action-card">
+                  <BsPlus className="action-icon" />
+                  <div className="action-content">
+                    <h5>Record Waste</h5>
+                    <p>Log new food/beverage disposal entry</p>
+                  </div>
+                </div>
+                <div className="waste-action-card">
+                  <BsRecycle className="action-icon" />
+                  <div className="action-content">
+                    <h5>Schedule Pickup</h5>
+                    <p>Arrange bottle & can collection service</p>
+                  </div>
+                </div>
+                <div className="waste-action-card">
+                  <BsBarChart className="action-icon" />
+                  <div className="action-content">
+                    <h5>Generate Report</h5>
+                    <p>Create detailed waste analytics</p>
+                  </div>
+                </div>
+                <div className="waste-action-card">
+                  <BsTree className="action-icon" />
+                  <div className="action-content">
+                    <h5>Sustainability Tips</h5>
+                    <p>View waste reduction recommendations</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Weather Forecasting Section */}
       <div className="weather-forecasting-section">
@@ -884,14 +1351,14 @@ function Home() {
               </div>
             </div>
 
-            {/* Waste Recorded */}
-            <div className="metric-item">
+            {/* Waste Recorded - Now Clickable */}
+            <div className="metric-item" onClick={handleWasteRecordedClick} style={{ cursor: "pointer" }}>
               <div className="metric-icon red">
                 <BsTrash />
               </div>
               <div className="metric-content">
                 <h4>Waste Recorded</h4>
-                <p>15 lbs</p>
+                <p>{getTotalWaste()} lbs</p>
               </div>
             </div>
           </div>
