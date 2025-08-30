@@ -29,9 +29,6 @@ import {
   BsPersonCheck,
   BsClipboardCheck,
   BsBarChart,
-  BsShift,
-  BsStopwatch,
-  BsPersonPlus,
   BsClockHistory,
   BsAward,
   BsMusicNote,
@@ -49,6 +46,7 @@ import {
   BsExclamationCircle,
   BsCheckCircle,
   BsInfoCircle,
+  BsThreeDotsVertical,
 } from "react-icons/bs"
 import {
   XAxis,
@@ -67,9 +65,14 @@ import {
   BarChart,
   Bar,
 } from "recharts"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+
+const WASTE_LS_KEY = "waste:entries"
 
 function Home() {
+  const navigate = useNavigate()
+
   const [isWeatherExpanded, setIsWeatherExpanded] = useState(false)
   const [isEventsExpanded, setIsEventsExpanded] = useState(false)
   const [isLaborExpanded, setIsLaborExpanded] = useState(false)
@@ -77,7 +80,74 @@ function Home() {
   const [selectedWasteCategory, setSelectedWasteCategory] = useState("all")
   const [selectedTimeRange, setSelectedTimeRange] = useState("week")
 
-  // Waste Management Data - Focus on Food and Beverages
+  // Dropdown for headers
+  const [openMenu, setOpenMenu] = useState(null) // "weather" | "events" | "labor" | null
+
+  // Waste entries (persisted)
+  const [wasteEntries, setWasteEntries] = useState([])
+  const [showWasteForm, setShowWasteForm] = useState(false)
+  const [wasteForm, setWasteForm] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    category: "food",
+    amount: "",
+    unit: "lbs",
+    cost: "",
+    note: "",
+  })
+  const [wasteFilter, setWasteFilter] = useState("all")
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(WASTE_LS_KEY)
+      if (raw) setWasteEntries(JSON.parse(raw))
+    } catch {}
+  }, [])
+
+  const saveWasteEntries = (entries) => {
+    setWasteEntries(entries)
+    try {
+      localStorage.setItem(WASTE_LS_KEY, JSON.stringify(entries))
+    } catch {}
+  }
+
+  const addWasteEntry = (e) => {
+    e.preventDefault()
+    if (!wasteForm.amount || !wasteForm.cost) return
+    const entry = {
+      id: Date.now(),
+      ...wasteForm,
+      amount: Number(wasteForm.amount),
+      cost: Number(wasteForm.cost),
+    }
+    const next = [entry, ...wasteEntries]
+    saveWasteEntries(next)
+    setShowWasteForm(false)
+    setWasteForm({
+      date: new Date().toISOString().slice(0, 10),
+      category: "food",
+      amount: "",
+      unit: wasteForm.category === "beverages" ? "gallons" : "lbs",
+      cost: "",
+      note: "",
+    })
+    // Ensure section is open to show the new entry
+    setIsWasteExpanded(true)
+  }
+
+  const removeWasteEntry = (id) => {
+    const next = wasteEntries.filter((w) => w.id !== id)
+    saveWasteEntries(next)
+  }
+
+  const filteredWasteEntries = useMemo(() => {
+    return wasteEntries.filter((e) => (wasteFilter === "all" ? true : e.category === wasteFilter))
+  }, [wasteEntries, wasteFilter])
+
+  const toggleMenu = (key) => {
+    setOpenMenu((curr) => (curr === key ? null : key))
+  }
+
+  // Waste Management Data
   const wasteCategories = [
     {
       id: "food",
@@ -195,48 +265,13 @@ function Home() {
   ]
 
   const data = [
-    {
-      name: "Jan",
-      sales: 4000,
-      revenue: 2400,
-      profit: 2000,
-    },
-    {
-      name: "Feb",
-      sales: 3000,
-      revenue: 1398,
-      profit: 1800,
-    },
-    {
-      name: "Mar",
-      sales: 2000,
-      revenue: 9800,
-      profit: 2290,
-    },
-    {
-      name: "Apr",
-      sales: 2780,
-      revenue: 3908,
-      profit: 2500,
-    },
-    {
-      name: "May",
-      sales: 1890,
-      revenue: 4800,
-      profit: 2181,
-    },
-    {
-      name: "Jun",
-      sales: 2390,
-      revenue: 3800,
-      profit: 2500,
-    },
-    {
-      name: "Jul",
-      sales: 3490,
-      revenue: 4300,
-      profit: 2800,
-    },
+    { name: "Jan", sales: 4000, revenue: 2400, profit: 2000 },
+    { name: "Feb", sales: 3000, revenue: 1398, profit: 1800 },
+    { name: "Mar", sales: 2000, revenue: 9800, profit: 2290 },
+    { name: "Apr", sales: 2780, revenue: 3908, profit: 2500 },
+    { name: "May", sales: 1890, revenue: 4800, profit: 2181 },
+    { name: "Jun", sales: 2390, revenue: 3800, profit: 2500 },
+    { name: "Jul", sales: 3490, revenue: 4300, profit: 2800 },
   ]
 
   const pieData = [
@@ -257,13 +292,13 @@ function Home() {
   ]
 
   const laborPlanningData = [
-    { day: "Mon", predicted: 85, actual: 82, staff: 12 },
-    { day: "Tue", predicted: 92, actual: 88, staff: 14 },
-    { day: "Wed", predicted: 78, actual: 75, staff: 10 },
-    { day: "Thu", predicted: 105, actual: 102, staff: 16 },
-    { day: "Fri", predicted: 120, actual: 118, staff: 18 },
-    { day: "Sat", predicted: 140, actual: 135, staff: 20 },
-    { day: "Sun", predicted: 95, actual: 92, staff: 15 },
+    { day: "Mon", predicted: 85, actual: 88, staff: 12 },
+    { day: "Tue", predicted: 92, actual: 90, staff: 14 },
+    { day: "Wed", predicted: 78, actual: 79, staff: 10 },
+    { day: "Thu", predicted: 105, actual: 103, staff: 16 },
+    { day: "Fri", predicted: 120, actual: 123, staff: 18 },
+    { day: "Sat", predicted: 140, actual: 145, staff: 20 },
+    { day: "Sun", predicted: 95, actual: 97, staff: 15 },
   ]
 
   const upcomingEvents = [
@@ -395,11 +430,20 @@ function Home() {
   }
 
   const getTotalWaste = () => {
-    return wasteCategories.reduce((total, category) => total + category.amount, 0).toFixed(1)
+    // Base categories + sum of persisted entries (convert only matching units)
+    const baseTotal = wasteCategories.reduce((total, category) => total + category.amount, 0)
+    const entriesTotal = wasteEntries.reduce((sum, e) => {
+      // Add only 'lbs' to lbs-like categories; beverages tracked separately (gallons) won't be added to lbs
+      if (e.unit === "lbs") return sum + e.amount
+      return sum
+    }, 0)
+    return (baseTotal + entriesTotal).toFixed(1)
   }
 
   const getTotalCost = () => {
-    return wasteCategories.reduce((total, category) => total + category.cost, 0).toFixed(2)
+    const baseCost = wasteCategories.reduce((total, category) => total + category.cost, 0)
+    const entriesCost = wasteEntries.reduce((sum, e) => sum + (e.cost || 0), 0)
+    return (baseCost + entriesCost).toFixed(2)
   }
 
   const getFilteredWasteData = () => {
@@ -413,7 +457,66 @@ function Home() {
   }
 
   const handleWasteRecordedClick = () => {
-    setIsWasteExpanded(!isWasteExpanded)
+    setIsWasteExpanded(true)
+  }
+
+  const HeaderMenu = ({ id, onOpenDetails, onToggle, isExpanded }) => {
+    return (
+      <div style={{ position: "relative" }}>
+        <button
+          className="glass-button"
+          onClick={(e) => {
+            e.stopPropagation()
+            toggleMenu(id)
+          }}
+          aria-haspopup="menu"
+          aria-expanded={openMenu === id}
+          title="Options"
+        >
+          <BsThreeDotsVertical /> Options
+        </button>
+        {openMenu === id && (
+          <div
+            role="menu"
+            style={{
+              position: "absolute",
+              right: 0,
+              marginTop: 8,
+              background: "var(--background-solid)",
+              borderRadius: 12,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              padding: 8,
+              minWidth: 180,
+              zIndex: 20,
+              border: "1px solid var(--glass-border)",
+            }}
+          >
+            <button
+              className="glass-button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenDetails()
+                setOpenMenu(null)
+              }}
+              style={{ width: "100%", marginBottom: 6, display: "flex", justifyContent: "space-between" }}
+            >
+              Open details <span>↗</span>
+            </button>
+            <button
+              className="glass-button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggle()
+                setOpenMenu(null)
+              }}
+              style={{ width: "100%", display: "flex", justifyContent: "space-between" }}
+            >
+              {isExpanded ? "Collapse" : "Expand"} <span>{isExpanded ? "▾" : "▸"}</span>
+            </button>
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -456,10 +559,10 @@ function Home() {
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
               </select>
-              <button className="glass-button">
+              <button className="glass-button" onClick={() => window.print()}>
                 <BsDownload /> Export Report
               </button>
-              <button className="glass-button" onClick={() => setIsWasteExpanded(false)}>
+              <button className="glass-button" onClick={() => setIsWasteExpanded(false)} title="Close">
                 <BsX />
               </button>
             </div>
@@ -474,7 +577,7 @@ function Home() {
                   <div className="waste-summary-details">
                     <h4>Total Waste</h4>
                     <div className="waste-summary-number">{getTotalWaste()}</div>
-                    <p>lbs this week</p>
+                    <p>lbs this period</p>
                   </div>
                 </div>
                 <div className="waste-summary-card">
@@ -482,7 +585,7 @@ function Home() {
                   <div className="waste-summary-details">
                     <h4>Cost Impact</h4>
                     <div className="waste-summary-number">${getTotalCost()}</div>
-                    <p>weekly loss</p>
+                    <p>total cost</p>
                   </div>
                 </div>
                 <div className="waste-summary-card">
@@ -529,7 +632,7 @@ function Home() {
                 <BsBarChart /> Food & Beverage Waste Breakdown
               </h4>
               <div className="waste-categories-grid">
-                {wasteCategories.map((category, index) => (
+                {wasteCategories.map((category) => (
                   <div key={category.id} className="waste-category-card">
                     <div className="category-header">
                       <div className="category-icon" style={{ backgroundColor: category.color }}>
@@ -663,37 +766,66 @@ function Home() {
               </div>
             </div>
 
-            {/* Waste Reduction Goals */}
+            {/* Recorded Waste Entries (Persisted) */}
             <div className="waste-goals-section">
               <h4>
-                <BsCheckCircle /> Waste Reduction Goals
+                <BsClipboardCheck /> Recorded Waste Entries
               </h4>
-              <div className="goals-grid">
-                {wasteReductionGoals.map((goal, index) => (
-                  <div key={index} className="goal-card">
-                    <div className="goal-header">
-                      <h5>{goal.category}</h5>
-                      <span className="goal-progress">{goal.progress}%</span>
-                    </div>
-                    <div className="goal-metrics">
-                      <div className="goal-values">
-                        <span>Current: {goal.current} lbs</span>
-                        <span>Target: {goal.target} lbs</span>
-                      </div>
-                      <div className="goal-bar">
-                        <div
-                          className="goal-fill"
-                          style={{
-                            width: `${goal.progress}%`,
-                            backgroundColor:
-                              goal.progress >= 80 ? "#43e97b" : goal.progress >= 60 ? "#4facfe" : "#f093fb",
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+
+              <div style={{ display: "flex", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                <select
+                  className="glass-button"
+                  value={wasteFilter}
+                  onChange={(e) => setWasteFilter(e.target.value)}
+                  title="Filter by category"
+                >
+                  <option value="all">All</option>
+                  <option value="food">Food</option>
+                  <option value="beverages">Beverages</option>
+                  <option value="packaging">Packaging</option>
+                  <option value="organic">Organic</option>
+                </select>
+                <span className="text-gradient" style={{ fontWeight: 700 }}>
+                  Total entries: {filteredWasteEntries.length}
+                </span>
               </div>
+
+              {filteredWasteEntries.length === 0 ? (
+                <div className="goal-card">No recorded entries yet.</div>
+              ) : (
+                <div className="user-table-container">
+                  <table className="user-table" style={{ width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Cost</th>
+                        <th>Note</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredWasteEntries.map((e) => (
+                        <tr key={e.id}>
+                          <td>{e.date}</td>
+                          <td style={{ textTransform: "capitalize" }}>{e.category}</td>
+                          <td>
+                            {e.amount} {e.unit}
+                          </td>
+                          <td>${e.cost.toFixed(2)}</td>
+                          <td>{e.note || "-"}</td>
+                          <td>
+                            <button className="action-btn delete" onClick={() => removeWasteEntry(e.id)}>
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
@@ -702,7 +834,7 @@ function Home() {
                 <BsClipboardCheck /> Quick Actions
               </h4>
               <div className="waste-actions-grid">
-                <div className="waste-action-card">
+                <div className="waste-action-card" onClick={() => setShowWasteForm(true)}>
                   <BsPlus className="action-icon" />
                   <div className="action-content">
                     <h5>Record Waste</h5>
@@ -732,21 +864,184 @@ function Home() {
                 </div>
               </div>
             </div>
+
+            {/* Modal: Record Waste */}
+            {showWasteForm && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                onClick={() => setShowWasteForm(false)}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 50,
+                  padding: 16,
+                }}
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: "100%",
+                    maxWidth: 520,
+                    background: "var(--background-solid)",
+                    borderRadius: 16,
+                    border: "1px solid var(--glass-border)",
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                    padding: 20,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <h3 className="section-title" style={{ margin: 0, borderBottom: "none" }}>
+                      Record Waste
+                    </h3>
+                    <button className="glass-button" onClick={() => setShowWasteForm(false)}>
+                      <BsX />
+                    </button>
+                  </div>
+
+                  <form onSubmit={addWasteEntry} style={{ display: "grid", gap: 12, marginTop: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label>Date</label>
+                        <input
+                          type="date"
+                          required
+                          value={wasteForm.date}
+                          onChange={(e) => setWasteForm((f) => ({ ...f, date: e.target.value }))}
+                          className="glass-button"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                      <div>
+                        <label>Category</label>
+                        <select
+                          className="glass-button"
+                          value={wasteForm.category}
+                          onChange={(e) =>
+                            setWasteForm((f) => ({
+                              ...f,
+                              category: e.target.value,
+                              unit: e.target.value === "beverages" ? "gallons" : "lbs",
+                            }))
+                          }
+                          style={{ width: "100%" }}
+                        >
+                          <option value="food">Food</option>
+                          <option value="beverages">Beverages</option>
+                          <option value="packaging">Packaging</option>
+                          <option value="organic">Organic</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label>Amount</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          required
+                          placeholder="0"
+                          value={wasteForm.amount}
+                          onChange={(e) => setWasteForm((f) => ({ ...f, amount: e.target.value }))}
+                          className="glass-button"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                      <div>
+                        <label>Unit</label>
+                        <select
+                          className="glass-button"
+                          value={wasteForm.unit}
+                          onChange={(e) => setWasteForm((f) => ({ ...f, unit: e.target.value }))}
+                          style={{ width: "100%" }}
+                        >
+                          <option value="lbs">lbs</option>
+                          <option value="gallons">gallons</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label>Cost ($)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          required
+                          placeholder="0.00"
+                          value={wasteForm.cost}
+                          onChange={(e) => setWasteForm((f) => ({ ...f, cost: e.target.value }))}
+                          className="glass-button"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                      <div>
+                        <label>Note</label>
+                        <input
+                          type="text"
+                          placeholder="Optional note"
+                          value={wasteForm.note}
+                          onChange={(e) => setWasteForm((f) => ({ ...f, note: e.target.value }))}
+                          className="glass-button"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                      <button type="button" onClick={() => setShowWasteForm(false)} className="glass-button">
+                        Cancel
+                      </button>
+                      <button type="submit" className="glass-button" style={{ background: "rgba(67,233,123,0.2)" }}>
+                        Save Entry
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Weather Forecasting Section */}
       <div className="weather-forecasting-section">
-        <div className="weather-header" onClick={() => setIsWeatherExpanded(!isWeatherExpanded)}>
-          <div className="weather-title">
+        <div className="weather-header">
+          <div
+            className="weather-title"
+            onClick={() => navigate("/weather-impact")}
+            style={{ cursor: "pointer" }}
+            title="Open details page"
+          >
             <BsCloudRain className="weather-main-icon" />
             <div>
               <h3>Weather Forecasting & Sales Impact</h3>
               <p>25/05/2025 - 25/06/2025</p>
             </div>
           </div>
-          <div className="weather-toggle">{isWeatherExpanded ? <BsChevronUp /> : <BsChevronDown />}</div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <HeaderMenu
+              id="weather"
+              onOpenDetails={() => navigate("/weather-impact")}
+              onToggle={() => setIsWeatherExpanded((v) => !v)}
+              isExpanded={isWeatherExpanded}
+            />
+            <button
+              className="glass-button"
+              onClick={() => setIsWeatherExpanded(!isWeatherExpanded)}
+              aria-expanded={isWeatherExpanded}
+              title={isWeatherExpanded ? "Collapse" : "Expand"}
+            >
+              {isWeatherExpanded ? <BsChevronUp /> : <BsChevronDown />}
+            </button>
+          </div>
         </div>
 
         {isWeatherExpanded && (
@@ -847,21 +1142,47 @@ function Home() {
                 </div>
               </div>
             </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Link to="/weather-impact" className="glass-button" title="Open full weather impact page">
+                Open details ↗
+              </Link>
+            </div>
           </div>
         )}
       </div>
 
       {/* Nearby Events Section */}
       <div className="events-section-container">
-        <div className="events-header" onClick={() => setIsEventsExpanded(!isEventsExpanded)}>
-          <div className="events-title">
+        <div className="events-header">
+          <div
+            className="events-title"
+            onClick={() => navigate("/events-impact")}
+            style={{ cursor: "pointer" }}
+            title="Open details page"
+          >
             <BsCalendar3 className="events-main-icon" />
             <div>
               <h3>Nearby Events & Impact Analysis</h3>
               <p>Real-time event tracking and sales correlation</p>
             </div>
           </div>
-          <div className="events-toggle">{isEventsExpanded ? <BsChevronUp /> : <BsChevronDown />}</div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <HeaderMenu
+              id="events"
+              onOpenDetails={() => navigate("/events-impact")}
+              onToggle={() => setIsEventsExpanded((v) => !v)}
+              isExpanded={isEventsExpanded}
+            />
+            <button
+              className="glass-button"
+              onClick={() => setIsEventsExpanded(!isEventsExpanded)}
+              aria-expanded={isEventsExpanded}
+              title={isEventsExpanded ? "Collapse" : "Expand"}
+            >
+              {isEventsExpanded ? <BsChevronUp /> : <BsChevronDown />}
+            </button>
+          </div>
         </div>
 
         {isEventsExpanded && (
@@ -1025,21 +1346,47 @@ function Home() {
                 ))}
               </div>
             </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Link to="/events-impact" className="glass-button" title="Open full events impact page">
+                Open details ↗
+              </Link>
+            </div>
           </div>
         )}
       </div>
 
       {/* Labor Planning Section */}
       <div className="labor-section-container">
-        <div className="labor-header" onClick={() => setIsLaborExpanded(!isLaborExpanded)}>
-          <div className="labor-title">
+        <div className="labor-header">
+          <div
+            className="labor-title"
+            onClick={() => navigate("/labor-planning")}
+            style={{ cursor: "pointer" }}
+            title="Open details page"
+          >
             <BsPersonCheck className="labor-main-icon" />
             <div>
               <h3>Labor Planning & Optimization</h3>
               <p>AI-driven staff scheduling and performance tracking</p>
             </div>
           </div>
-          <div className="labor-toggle">{isLaborExpanded ? <BsChevronUp /> : <BsChevronDown />}</div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <HeaderMenu
+              id="labor"
+              onOpenDetails={() => navigate("/labor-planning")}
+              onToggle={() => setIsLaborExpanded((v) => !v)}
+              isExpanded={isLaborExpanded}
+            />
+            <button
+              className="glass-button"
+              onClick={() => setIsLaborExpanded(!isLaborExpanded)}
+              aria-expanded={isLaborExpanded}
+              title={isLaborExpanded ? "Collapse" : "Expand"}
+            >
+              {isLaborExpanded ? <BsChevronUp /> : <BsChevronDown />}
+            </button>
+          </div>
         </div>
 
         {isLaborExpanded && (
@@ -1206,42 +1553,11 @@ function Home() {
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="labor-actions">
-              <h4>
-                <BsClipboardCheck /> Quick Actions
-              </h4>
-              <div className="actions-grid">
-                <div className="action-card">
-                  <BsPersonPlus className="action-icon" />
-                  <div className="action-content">
-                    <h5>Add Staff</h5>
-                    <p>Schedule additional staff for peak hours</p>
-                  </div>
-                </div>
-                <div className="action-card">
-                  <BsShift className="action-icon" />
-                  <div className="action-content">
-                    <h5>Adjust Shifts</h5>
-                    <p>Optimize shift patterns based on demand</p>
-                  </div>
-                </div>
-                <div className="action-card">
-                  <BsBarChart className="action-icon" />
-                  <div className="action-content">
-                    <h5>View Reports</h5>
-                    <p>Generate detailed labor analytics</p>
-                  </div>
-                </div>
-                <div className="action-card">
-                  <BsStopwatch className="action-icon" />
-                  <div className="action-content">
-                    <h5>Real-time Tracking</h5>
-                    <p>Monitor current staff performance</p>
-                  </div>
-                </div>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <Link to="/labor-planning" className="glass-button" title="Open full labor planning page">
+                  Open Labor Planning ↗
+                </Link>
               </div>
             </div>
           </div>
@@ -1250,6 +1566,18 @@ function Home() {
 
       {/* Main Stats Cards */}
       <div className="main-cards">
+        <div className="card" onClick={handleWasteRecordedClick} style={{ cursor: "pointer" }}>
+          <div className="card-inner">
+            <div>
+              <h3>WASTE RECORDED</h3>
+              <p>{getTotalWaste()} lbs</p>
+              <span className="stat-change positive">
+                <BsArrowUpShort /> Click to view details
+              </span>
+            </div>
+            <BsTrash className="card_icon" />
+          </div>
+        </div>
         <div className="card">
           <div className="card-inner">
             <div>
@@ -1284,18 +1612,6 @@ function Home() {
               </span>
             </div>
             <BsPeopleFill className="card_icon" />
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-inner">
-            <div>
-              <h3>ALERTS</h3>
-              <p>42</p>
-              <span className="stat-change positive">
-                <BsArrowUpShort /> 8% from last month
-              </span>
-            </div>
-            <BsFillBellFill className="card_icon" />
           </div>
         </div>
       </div>
@@ -1351,16 +1667,7 @@ function Home() {
               </div>
             </div>
 
-            {/* Waste Recorded - Now Clickable */}
-            <div className="metric-item" onClick={handleWasteRecordedClick} style={{ cursor: "pointer" }}>
-              <div className="metric-icon red">
-                <BsTrash />
-              </div>
-              <div className="metric-content">
-                <h4>Waste Recorded</h4>
-                <p>{getTotalWaste()} lbs</p>
-              </div>
-            </div>
+            {/* Waste Recorded duplicate kept as prominent card above */}
           </div>
         </div>
 
@@ -1369,7 +1676,6 @@ function Home() {
           <h3 className="section-title">Recent Activity</h3>
 
           <div className="activity-list">
-            {/* Item Added */}
             <div className="activity-item">
               <div className="activity-icon">
                 <BsCheck2Circle />
@@ -1381,7 +1687,6 @@ function Home() {
               </div>
             </div>
 
-            {/* Item Removed */}
             <div className="activity-item">
               <div className="activity-icon">
                 <BsCheck2Circle />
@@ -1393,7 +1698,6 @@ function Home() {
               </div>
             </div>
 
-            {/* Order Completed */}
             <div className="activity-item">
               <div className="activity-icon">
                 <BsCheck2Circle />
@@ -1418,7 +1722,6 @@ function Home() {
             <h4>Food Items</h4>
 
             <div className="top-selling-items">
-              {/* Burger */}
               <div className="top-selling-item">
                 <div className="top-selling-rank">1</div>
                 <div className="top-selling-info">
@@ -1433,7 +1736,6 @@ function Home() {
                 </div>
               </div>
 
-              {/* Pasta */}
               <div className="top-selling-item">
                 <div className="top-selling-rank">2</div>
                 <div className="top-selling-info">
@@ -1455,7 +1757,6 @@ function Home() {
             <h4>Beverages</h4>
 
             <div className="top-selling-items">
-              {/* Red Wine */}
               <div className="top-selling-item">
                 <div className="top-selling-rank">1</div>
                 <div className="top-selling-info">
@@ -1470,7 +1771,6 @@ function Home() {
                 </div>
               </div>
 
-              {/* Craft Beer */}
               <div className="top-selling-item">
                 <div className="top-selling-rank">2</div>
                 <div className="top-selling-info">
@@ -1494,15 +1794,7 @@ function Home() {
         <div className="chart-card">
           <h3>Sales Performance</h3>
           <ResponsiveContainer width="100%" height="85%">
-            <AreaChart
-              data={data}
-              margin={{
-                top: 10,
-                right: 30,
-                left: 0,
-                bottom: 0,
-              }}
-            >
+            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="name" stroke="var(--text-secondary)" />
               <YAxis stroke="var(--text-secondary)" />

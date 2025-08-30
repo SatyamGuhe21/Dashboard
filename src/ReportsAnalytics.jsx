@@ -14,6 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
+import { useNavigate } from "react-router-dom"
 
 // Sample data
 const barSalesData = {
@@ -66,6 +67,7 @@ function ReportsAnalytics() {
   const [activeTab, setActiveTab] = useState("bar")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const navigate = useNavigate()
 
   const currentData = activeTab === "bar" ? barSalesData : restaurantSalesData
 
@@ -75,8 +77,19 @@ function ReportsAnalytics() {
 
   return (
     <main className="main-container">
-      <div className="main-title">
-        <h3>{activeTab === "bar" ? "BAR" : "RESTAURANT"} REPORTS AND ANALYTICS</h3>
+      <div className="main-title" style={{ alignItems: "flex-end" }}>
+        <div>
+          <h3>{activeTab === "bar" ? "BAR" : "RESTAURANT"} REPORTS AND ANALYTICS</h3>
+          <div style={{ marginTop: 8 }}>
+            <button
+              className="glass-button"
+              onClick={() => navigate("/website-analytics")}
+              title="Open Website Analytics"
+            >
+              View Website Analytics ↗
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -112,66 +125,82 @@ function ReportsAnalytics() {
 
       {/* Date Range Filter */}
       <div
-        style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px", gap: "10px", alignItems: "center" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+          gap: "10px",
+          alignItems: "center",
+        }}
       >
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          style={{ padding: "8px", borderRadius: "20px", border: "1px solid #ccc" }}
-        />
-        <span>TO</span>
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          style={{ padding: "8px", borderRadius: "20px", border: "1px solid #ccc" }}
-        />
-        <button
-          style={{
-            backgroundColor: "#f44336",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            padding: "5px 10px",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-            cursor: "pointer",
-          }}
-          onClick={() => handleDownload("custom")}
-        >
-          <span style={{ fontSize: "18px" }}>↓</span> DOWNLOAD
-        </button>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{ padding: "8px", borderRadius: "20px", border: "1px solid #ccc" }}
+          />
+          <span>TO</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{ padding: "8px", borderRadius: "20px", border: "1px solid #ccc" }}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            style={{
+              backgroundColor: "#f44336",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "5px 10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              cursor: "pointer",
+            }}
+            onClick={() => handleDownload("custom")}
+          >
+            <span style={{ fontSize: "18px" }}>↓</span> DOWNLOAD
+          </button>
+        </div>
       </div>
 
-     {/* Sales Overview */}
-<div className="chart-card" style={{ marginBottom: "30px", minHeight: "420px" }}>
-  <h3 style={{ marginBottom: "16px" }}>Sales Overview</h3>
+      {/* Sales Overview */}
+      <div className="chart-card" style={{ marginBottom: "30px", minHeight: "420px" }}>
+        <h3 style={{ marginBottom: "16px" }}>Sales Overview</h3>
 
-  <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-    {/* Left - Content */}
-    <div style={{ flex: "1", minWidth: "250px", padding: "20px" }}>
-      <p><strong>Total Sales:</strong> ${currentData.overview.totalSales}</p>
-      <p><strong>Total Orders:</strong> {currentData.overview.totalOrders}</p>
-      <p><strong>Best Selling Item:</strong> {currentData.overview.bestSellingItem}</p>
-    </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+          {/* Left - Content */}
+          <div style={{ flex: "1", minWidth: "250px", padding: "20px" }}>
+            <p>
+              <strong>Total Sales:</strong> ${currentData.overview.totalSales}
+            </p>
+            <p>
+              <strong>Total Orders:</strong> {currentData.overview.totalOrders}
+            </p>
+            <p>
+              <strong>Best Selling Item:</strong> {currentData.overview.bestSellingItem}
+            </p>
+          </div>
 
-    {/* Right - Chart */}
-    <div style={{ flex: "2", minWidth: "300px", height: "300px", padding: "0 10px 20px 10px" }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={monthlySalesData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey={activeTab} stroke="#8884d8" activeDot={{ r: 8 }} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-</div>
+          {/* Right - Chart */}
+          <div style={{ flex: "2", minWidth: "300px", height: "300px", padding: "0 10px 20px 10px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={monthlySalesData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey={activeTab} stroke="#8884d8" activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
 
       {/* 2x2 Grid for Category & Customer */}
       <div className="analytics-grid">
@@ -179,14 +208,14 @@ function ReportsAnalytics() {
         <div className="chart-card">
           <h3 style={{ marginBottom: "16px" }}>Sales by Category</h3>
           <div style={{ display: "flex", flexWrap: "wrap" }}>
-            <div style={{ width: "50%", padding: "20px" }}>
+            <div style={{ width: "50%", padding: "20px", minWidth: 240 }}>
               {currentData.categories.map((category, index) => (
                 <p key={index}>
                   {category.name}: ${category.value}
                 </p>
               ))}
             </div>
-            <div style={{ width: "50%", height: "250px" }}>
+            <div style={{ width: "50%", height: "250px", minWidth: 240 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
