@@ -6,7 +6,6 @@ import {
   BsFillBellFill,
   BsDatabase,
   BsExclamationTriangle,
-  BsCurrencyDollar,
   BsTrash,
   BsCheck2Circle,
   BsArrowUpShort,
@@ -47,6 +46,7 @@ import {
   BsCheckCircle,
   BsInfoCircle,
   BsThreeDotsVertical,
+  BsPencil,
 } from "react-icons/bs"
 import {
   XAxis,
@@ -79,6 +79,32 @@ function Home() {
   const [isWasteExpanded, setIsWasteExpanded] = useState(false)
   const [selectedWasteCategory, setSelectedWasteCategory] = useState("all")
   const [selectedTimeRange, setSelectedTimeRange] = useState("week")
+
+  const [selectedLocation, setSelectedLocation] = useState("South London")
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
+  const [showForecastEditor, setShowForecastEditor] = useState(false)
+  const [editingForecast, setEditingForecast] = useState({ type: "", value: "" })
+
+  const locationData = {
+    "South London": {
+      sales: { current: 33796.1, forecast: 113109.77, percentage: 25 },
+      labor: { current: 8195.93, forecast: 12997.07, percentage: 9, secondary: 14 },
+    },
+    "North London": {
+      sales: { current: 28450.75, forecast: 95200.5, percentage: 18 },
+      labor: { current: 7250.4, forecast: 11800.25, percentage: 12, secondary: 16 },
+    },
+    "East London": {
+      sales: { current: 41200.3, forecast: 125000.8, percentage: 32 },
+      labor: { current: 9800.6, forecast: 15200.9, percentage: 7, secondary: 12 },
+    },
+    "West London": {
+      sales: { current: 35600.85, forecast: 108500.4, percentage: 22 },
+      labor: { current: 8900.2, forecast: 13500.75, percentage: 15, secondary: 18 },
+    },
+  }
+
+  const currentData = locationData[selectedLocation]
 
   // Dropdown for headers
   const [openMenu, setOpenMenu] = useState(null) // "weather" | "events" | "labor" | null
@@ -145,6 +171,23 @@ function Home() {
 
   const toggleMenu = (key) => {
     setOpenMenu((curr) => (curr === key ? null : key))
+  }
+
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location)
+    setShowLocationDropdown(false)
+  }
+
+  const handleForecastEdit = (type, currentValue) => {
+    setEditingForecast({ type, value: currentValue.toString() })
+    setShowForecastEditor(true)
+  }
+
+  const saveForecastEdit = () => {
+    // In a real app, this would update the backend
+    console.log(`[v0] Updating ${editingForecast.type} forecast to: ${editingForecast.value}`)
+    setShowForecastEditor(false)
+    setEditingForecast({ type: "", value: "" })
   }
 
   // Waste Management Data
@@ -537,6 +580,115 @@ function Home() {
         </div>
       </div>
 
+      <div className="location-sales-labor-section">
+        {/* Location with Dropdown */}
+        <div className="location-container">
+          <div className="location-card clickable" onClick={() => setShowLocationDropdown(!showLocationDropdown)}>
+            <BsGeoAlt className="location-icon" />
+            <span className="location-text">{selectedLocation}</span>
+            <BsChevronDown className={`dropdown-arrow ${showLocationDropdown ? "rotated" : ""}`} />
+          </div>
+
+          {showLocationDropdown && (
+            <div className="location-dropdown">
+              {Object.keys(locationData).map((location) => (
+                <div
+                  key={location}
+                  className={`location-option ${location === selectedLocation ? "selected" : ""}`}
+                  onClick={() => handleLocationSelect(location)}
+                >
+                  <BsGeoAlt className="location-option-icon" />
+                  <span>{location}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sales and Labor Cards - No Gap */}
+        <div className="sales-labor-container">
+          {/* Sales Card */}
+          <div className="prediction-card sales-card">
+            <div className="prediction-header">
+              <h3>Sales</h3>
+              <div className="prediction-indicator positive">
+                <BsArrowUpShort />
+                <span>{currentData.sales.percentage}%</span>
+              </div>
+            </div>
+            <div className="prediction-main-value">
+              €{currentData.sales.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            </div>
+            <div className="prediction-forecast">
+              <span className="forecast-label">Forecast</span>
+              <span
+                className="forecast-value editable"
+                onClick={() => handleForecastEdit("sales", currentData.sales.forecast)}
+              >
+                €{currentData.sales.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                <BsPencil className="edit-icon" />
+              </span>
+            </div>
+          </div>
+
+          {/* Labor Card */}
+          <div className="prediction-card labor-card">
+            <div className="prediction-header">
+              <h3>Labour</h3>
+              <div className="prediction-indicator negative">
+                <BsArrowUpShort />
+                <span>+{currentData.labor.percentage}%</span>
+              </div>
+            </div>
+            <div className="prediction-main-value">
+              €{currentData.labor.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            </div>
+            <div className="prediction-secondary-value">{currentData.labor.secondary}%</div>
+            <div className="prediction-forecast">
+              <span className="forecast-label">Forecast</span>
+              <span
+                className="forecast-value editable"
+                onClick={() => handleForecastEdit("labor", currentData.labor.forecast)}
+              >
+                €{currentData.labor.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                <BsPencil className="edit-icon" />
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showForecastEditor && (
+        <div className="modal-overlay" onClick={() => setShowForecastEditor(false)}>
+          <div className="forecast-editor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit {editingForecast.type === "sales" ? "Sales" : "Labour"} Forecast</h3>
+              <button className="close-button" onClick={() => setShowForecastEditor(false)}>
+                <BsX />
+              </button>
+            </div>
+            <div className="modal-body">
+              <label>Forecast Value (€)</label>
+              <input
+                type="number"
+                value={editingForecast.value}
+                onChange={(e) => setEditingForecast({ ...editingForecast, value: e.target.value })}
+                className="forecast-input"
+                step="0.01"
+              />
+            </div>
+            <div className="modal-footer">
+              <button className="cancel-button" onClick={() => setShowForecastEditor(false)}>
+                Cancel
+              </button>
+              <button className="save-button" onClick={saveForecastEdit}>
+                Save Forecast
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Waste Management Section */}
       {isWasteExpanded && (
         <div className="waste-management-section">
@@ -581,10 +733,12 @@ function Home() {
                   </div>
                 </div>
                 <div className="waste-summary-card">
-                  <BsCurrencyDollar className="waste-summary-icon" />
+                  <span className="waste-summary-icon" style={{ fontSize: "24px" }}>
+                    €
+                  </span>
                   <div className="waste-summary-details">
                     <h4>Cost Impact</h4>
-                    <div className="waste-summary-number">${getTotalCost()}</div>
+                    <div className="waste-summary-number">€{getTotalCost()}</div>
                     <p>total cost</p>
                   </div>
                 </div>
@@ -652,7 +806,7 @@ function Home() {
                       </div>
                       <div className="metric-row">
                         <span className="metric-label">Cost Impact:</span>
-                        <span className="metric-value">${category.cost}</span>
+                        <span className="metric-value">€{category.cost}</span>
                       </div>
                       <div className="metric-row">
                         <span className="metric-label">Trend:</span>
@@ -672,7 +826,7 @@ function Home() {
                           <span className="item-amount">
                             {item.amount} {category.unit}
                           </span>
-                          <span className="item-cost">${item.cost}</span>
+                          <span className="item-cost">€{item.cost}</span>
                         </div>
                       ))}
                     </div>
@@ -813,7 +967,7 @@ function Home() {
                           <td>
                             {e.amount} {e.unit}
                           </td>
-                          <td>${e.cost.toFixed(2)}</td>
+                          <td>€{e.cost.toFixed(2)}</td>
                           <td>{e.note || "-"}</td>
                           <td>
                             <button className="action-btn delete" onClick={() => removeWasteEntry(e.id)}>
@@ -1648,11 +1802,11 @@ function Home() {
             {/* Total Sales */}
             <div className="metric-item">
               <div className="metric-icon green">
-                <BsCurrencyDollar />
+                <span style={{ fontSize: "20px" }}>€</span>
               </div>
               <div className="metric-content">
                 <h4>Total Sales</h4>
-                <p>$25,000</p>
+                <p>€25,000</p>
               </div>
             </div>
 
@@ -1663,7 +1817,7 @@ function Home() {
               </div>
               <div className="metric-content">
                 <h4>Net Profit</h4>
-                <p>$15,000</p>
+                <p>€15,000</p>
               </div>
             </div>
 
@@ -1704,7 +1858,7 @@ function Home() {
               </div>
               <div className="activity-content">
                 <h4>Order Completed</h4>
-                <p>Order #1042 marked as completed - $156.50</p>
+                <p>Order #1042 marked as completed - €156.50</p>
                 <span className="activity-time">1:30 PM</span>
               </div>
             </div>
@@ -1731,7 +1885,7 @@ function Home() {
                   </div>
                   <div className="top-selling-stats">
                     <span>200 units</span>
-                    <span>$2,400 revenue</span>
+                    <span>€2,400 revenue</span>
                   </div>
                 </div>
               </div>
@@ -1745,7 +1899,7 @@ function Home() {
                   </div>
                   <div className="top-selling-stats">
                     <span>150 units</span>
-                    <span>$1,800 revenue</span>
+                    <span>€1,800 revenue</span>
                   </div>
                 </div>
               </div>
@@ -1766,7 +1920,7 @@ function Home() {
                   </div>
                   <div className="top-selling-stats">
                     <span>100 bottles</span>
-                    <span>$1,500 revenue</span>
+                    <span>€1,500 revenue</span>
                   </div>
                 </div>
               </div>
@@ -1780,7 +1934,7 @@ function Home() {
                   </div>
                   <div className="top-selling-stats">
                     <span>80 pints</span>
-                    <span>$960 revenue</span>
+                    <span>€960 revenue</span>
                   </div>
                 </div>
               </div>
