@@ -634,7 +634,7 @@ function Home() {
           {/* Labor Card */}
           <div className="prediction-card labor-card">
             <div className="prediction-header">
-              <h3>Labour</h3>
+              <h3>Staff </h3>
               <div className="prediction-indicator negative">
                 <BsArrowUpShort />
                 <span>+{currentData.labor.percentage}%</span>
@@ -662,7 +662,7 @@ function Home() {
         <div className="modal-overlay" onClick={() => setShowForecastEditor(false)}>
           <div className="forecast-editor-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Edit {editingForecast.type === "sales" ? "Sales" : "Labour"} Forecast</h3>
+              <h3>Edit {editingForecast.type === "sales" ? "Sales" : "Staff "} Forecast</h3>
               <button className="close-button" onClick={() => setShowForecastEditor(false)}>
                 <BsX />
               </button>
@@ -1521,7 +1521,7 @@ function Home() {
           >
             <BsPersonCheck className="labor-main-icon" />
             <div>
-              <h3>Labor Planning & Optimization</h3>
+              <h3>Staff  Planning & Optimization</h3>
               <p>AI-driven staff scheduling and performance tracking</p>
             </div>
           </div>
@@ -1644,7 +1644,7 @@ function Home() {
               </div>
 
               <div className="labor-chart-card">
-                <h4>Weekly Labor vs Demand</h4>
+                <h4>Weekly Staff  vs Demand</h4>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={laborPlanningData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
