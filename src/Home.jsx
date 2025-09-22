@@ -80,14 +80,14 @@ function Home() {
   const [selectedWasteCategory, setSelectedWasteCategory] = useState("all")
   const [selectedTimeRange, setSelectedTimeRange] = useState("week")
 
-  const [selectedLocation, setSelectedLocation] = useState("South London")
+  const [selectedLocation, setSelectedLocation] = useState("Birmingham")
   const [showLocationDropdown, setShowLocationDropdown] = useState(false)
   const [showForecastEditor, setShowForecastEditor] = useState(false)
   const [editingForecast, setEditingForecast] = useState({ type: "", value: "" })
 
   const locationData = {
-    "South London": {
-      sales: { current: 33796.1, forecast: 113109.77, percentage: 25 },
+    "Birmingham": {
+      sales: { current: 10756.1, forecast: 12056, percentage: 25 },
       labor: { current: 8195.93, forecast: 12997.07, percentage: 9, secondary: 14 },
     },
     "North London": {
