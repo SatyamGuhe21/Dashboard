@@ -626,7 +626,7 @@ function Home() {
 
       {/* Right: Forecast */}
       <div className="prediction-forecast">
-        <span className="forecast-label">Forecast</span>
+        <span className="forecast-label"><h3>Forecast </h3></span>
         <span
           className="forecast-value editable"
           onClick={() => handleForecastEdit("sales", currentData.sales.forecast)}
@@ -660,7 +660,7 @@ function Home() {
 
       {/* Right: Forecast */}
       <div className="prediction-forecast">
-        <span className="forecast-label">Forecast</span>
+        <span className="forecast-label"><h3>Forecast </h3></span>
         <span
           className="forecast-value editable"
           onClick={() => handleForecastEdit("labor", currentData.labor.forecast)}
