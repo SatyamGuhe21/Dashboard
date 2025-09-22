@@ -87,7 +87,7 @@ function Home() {
 
   const locationData = {
     "Birmingham": {
-      sales: { current: 10756.1, forecast: 12056, percentage: 25 },
+      sales: { current: 10756.1, forecast: 12056, percentage: 25 ,},
       labor: { current: 8195.93, forecast: 12997.07, percentage: 9, secondary: 14 },
     },
     "North London": {
@@ -607,55 +607,72 @@ function Home() {
 
         {/* Sales and Labor Cards - No Gap */}
         <div className="sales-labor-container">
-          {/* Sales Card */}
-          <div className="prediction-card sales-card">
-            <div className="prediction-header">
-              <h3>Sales</h3>
-              <div className="prediction-indicator positive">
-                <BsArrowUpShort />
-                <span>{currentData.sales.percentage}%</span>
-              </div>
-            </div>
-            <div className="prediction-main-value">
-              €{currentData.sales.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </div>
-            <div className="prediction-forecast">
-              <span className="forecast-label">Forecast</span>
-              <span
-                className="forecast-value editable"
-                onClick={() => handleForecastEdit("sales", currentData.sales.forecast)}
-              >
-                €{currentData.sales.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                <BsPencil className="edit-icon" />
-              </span>
-            </div>
-          </div>
+  {/* Sales Card */}
+  <div className="prediction-card sales-card">
+    <div className="prediction-header">
+      <h3>Sales</h3>
+      <div className="prediction-indicator positive">
+        <BsArrowUpShort />
+        <span>{currentData.sales.percentage}%</span>
+      </div>
+    </div>
 
-          {/* Labor Card */}
-          <div className="prediction-card labor-card">
-            <div className="prediction-header">
-              <h3>Staff </h3>
-              <div className="prediction-indicator negative">
-                <BsArrowUpShort />
-                <span>+{currentData.labor.percentage}%</span>
-              </div>
-            </div>
-            <div className="prediction-main-value">
-              €{currentData.labor.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </div>
-            <div className="prediction-secondary-value">{currentData.labor.secondary}%</div>
-            <div className="prediction-forecast">
-              <span className="forecast-label">Forecast</span>
-              <span
-                className="forecast-value editable"
-                onClick={() => handleForecastEdit("labor", currentData.labor.forecast)}
-              >
-                €{currentData.labor.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                <BsPencil className="edit-icon" />
-              </span>
-            </div>
-          </div>
+    {/* Split layout */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "10px" }}>
+      {/* Left: Current Sales */}
+      <div className="prediction-main-value">
+        €{currentData.sales.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+      </div>
+
+      {/* Right: Forecast */}
+      <div className="prediction-forecast">
+        <span className="forecast-label">Forecast</span>
+        <span
+          className="forecast-value editable"
+          onClick={() => handleForecastEdit("sales", currentData.sales.forecast)}
+        >
+          €{currentData.sales.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+          <BsPencil className="edit-icon" />
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {/* Staff Card */}
+  <div className="prediction-card labor-card">
+    <div className="prediction-header">
+      <h3>Staff</h3>
+      <div className="prediction-indicator negative">
+        <BsArrowUpShort />
+        <span>+{currentData.labor.percentage}%</span>
+      </div>
+    </div>
+
+    {/* Split layout */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "10px" }}>
+      {/* Left: Current Staff */}
+      <div>
+        <div className="prediction-main-value">
+          €{currentData.labor.current.toLocaleString("en-US", { minimumFractionDigits: 2 })}
         </div>
+        <div className="prediction-secondary-value">{currentData.labor.secondary}%</div>
+      </div>
+
+      {/* Right: Forecast */}
+      <div className="prediction-forecast">
+        <span className="forecast-label">Forecast</span>
+        <span
+          className="forecast-value editable"
+          onClick={() => handleForecastEdit("labor", currentData.labor.forecast)}
+        >
+          €{currentData.labor.forecast.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+          <BsPencil className="edit-icon" />
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
       </div>
 
       {showForecastEditor && (
